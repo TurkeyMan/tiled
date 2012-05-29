@@ -200,15 +200,32 @@ void MapWriterPrivate::writeMap(QXmlStreamWriter &w, const Map *map)
     w.writeEndElement();
 }
 
-static QString makeTerrainAttribute(const Tile *tile)
+static QString makeTerrainAttribute(const TerrainInfo *terrainInfo)
+{
+    QString terrain;
+    if (terrainInfo->type() == TerrainInfo::Adjacency) {
+        terrain = QString::number(terrainInfo->terrainId());
+    } else {
+        for (int i = 0; i < 4; ++i ) {
+            if (i > 0)
+                terrain += QLatin1String(",");
+            int t = terrainInfo->cornerTerrainId((TerrainInfo::Corner)i);
+            if (t > -1)
+                terrain += QString::number(t);
+        }
+    }
+    return terrain;
+}
+
+static QString makeConnectionsAttribute(const TerrainInfo *terrainInfo)
 {
     QString terrain;
     for (int i = 0; i < 4; ++i ) {
         if (i > 0)
             terrain += QLatin1String(",");
-        int t = tile->cornerTerrainId(i);
-        if (t > -1)
-            terrain += QString::number(t);
+        int c = terrainInfo->connection((TerrainInfo::Edge)i);
+        if (c > -1)
+            terrain += QString::number(c);
     }
     return terrain;
 }
@@ -299,7 +316,8 @@ void MapWriterPrivate::writeTileset(QXmlStreamWriter &w, const Tileset *tileset,
             Terrain* t = tileset->terrain(i);
             w.writeStartElement(QLatin1String("terrain"));
             w.writeAttribute(QLatin1String("name"), t->name());
-//            w.writeAttribute(QLatin1String("color"), tt->color());
+            if (t->type() == Terrain::MatchAdjacency)
+                w.writeAttribute(QLatin1String("type"), QLatin1String("adjacency"));
             w.writeAttribute(QLatin1String("tile"), QString::number(t->paletteImageTile()));
             if (t->hasTransitionDistances())
                 w.writeAttribute(QLatin1String("distances"), makeTransitionDistanceAttribute(t, tileset->terrainCount()));
@@ -311,15 +329,18 @@ void MapWriterPrivate::writeTileset(QXmlStreamWriter &w, const Tileset *tileset,
     // Write the properties for those tiles that have them
     for (int i = 0; i < tileset->tileCount(); ++i) {
         const Tile *tile = tileset->tileAt(i);
+        const TerrainInfo *terrainInfo = tile->terrainInfo();
         const Properties properties = tile->properties();
-        unsigned int terrain = tile->terrain();
-        int probability = tile->terrainProbability();
+        unsigned int terrain = terrainInfo->terrain();
+        int probability = terrainInfo->terrainProbability();
 
         if (!properties.isEmpty() || terrain != 0xFFFFFFFF || probability != -1 || imageSource.isEmpty()) {
             w.writeStartElement(QLatin1String("tile"));
             w.writeAttribute(QLatin1String("id"), QString::number(i));
-            if (terrain != 0xFFFFFFFF)
-                w.writeAttribute(QLatin1String("terrain"), makeTerrainAttribute(tile));
+            if (terrain != 0xFFFFFFFF || terrainInfo->type() == TerrainInfo::Adjacency)
+                w.writeAttribute(QLatin1String("terrain"), makeTerrainAttribute(terrainInfo));
+            if (terrainInfo->type() == TerrainInfo::Adjacency && terrainInfo->connections() != 0xFFFFFFFF)
+                w.writeAttribute(QLatin1String("connections"), makeConnectionsAttribute(terrainInfo));
             if (probability != -1)
                 w.writeAttribute(QLatin1String("probability"), QString::number(probability));
             if (!properties.isEmpty())

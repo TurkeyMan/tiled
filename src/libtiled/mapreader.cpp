@@ -345,15 +345,32 @@ void MapReaderPrivate::readTilesetTile(Tileset *tileset)
         return;
     }
     Tile *tile = tileset->tileAt(id);
+    TerrainInfo *terrainInfo = tile->terrainInfo();
+
+    // TODO: Add support for individual tiles (then it needs to be added here)
 
     // Read tile quadrant terrain ids
     QString terrain = atts.value(QLatin1String("terrain")).toString();
     if (!terrain.isEmpty()) {
         QStringList quadrants = terrain.split(QLatin1String(","));
-        if (quadrants.size() == 4) {
+        if (quadrants.size() == 1) {
+            terrainInfo->setTerrainId(quadrants[0].toInt());
+        } else if (quadrants.size() == 4) {
             for (int i = 0; i < 4; ++i) {
                 int t = quadrants[i].isEmpty() ? -1 : quadrants[i].toInt();
-                tile->setCornerTerrain(i, t);
+                terrainInfo->setCornerTerrain((TerrainInfo::Corner)i, t);
+            }
+        }
+    }
+
+    // Read tile connections
+    QString connections = atts.value(QLatin1String("connections")).toString();
+    if (!terrain.isEmpty()) {
+        QStringList directions = connections.split(QLatin1String(","));
+        if (directions.size() == 4) {
+            for (int i = 0; i < 4; ++i) {
+                int c = directions[i].isEmpty() ? -1 : directions[i].toInt();
+                terrainInfo->setConnection((TerrainInfo::Edge)i, c);
             }
         }
     }
@@ -361,7 +378,7 @@ void MapReaderPrivate::readTilesetTile(Tileset *tileset)
     // Read tile probability
     QString probability = atts.value(QLatin1String("probability")).toString();
     if (!probability.isEmpty()) {
-        tile->setTerrainProbability(probability.toFloat());
+        terrainInfo->setTerrainProbability(probability.toFloat());
     }
 
     while (xml.readNextStartElement()) {
@@ -444,9 +461,13 @@ void MapReaderPrivate::readTilesetTerrainTypes(Tileset *tileset)
             const QXmlStreamAttributes atts = xml.attributes();
             QString name = atts.value(QLatin1String("name")).toString();
             int tile = atts.value(QLatin1String("tile")).toString().toInt();
-//            int tile = atts.value(QLatin1String("color")).toString().toInt();
 
-            Terrain *terrain = new Terrain(tileset->terrainCount(), tileset, name, tile);
+            Terrain::TerrainType terrainType = Terrain::MatchQuadrants;
+            QString type = atts.value(QLatin1String("type")).toString();
+            if (type == QLatin1String("adjacency"))
+                terrainType = Terrain::MatchAdjacency;
+
+            Terrain *terrain = new Terrain(tileset->terrainCount(), tileset, name, tile, terrainType);
 
             QString distances = atts.value(QLatin1String("distances")).toString();
             if (!distances.isEmpty()) {

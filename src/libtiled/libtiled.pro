@@ -62,7 +62,8 @@ HEADERS += compression.h \
     tilelayer.h \
     tileset.h \
     gidmapper.h \
-    terrain.h
+    terrain.h \
+    terraininfo.h
 
 headers.files = $${HEADERS}
 headers.path = $${PREFIX}/include/tiled

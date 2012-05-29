@@ -152,28 +152,52 @@ void Tileset::calculateTerrainDistances()
         // Check all tiles for transitions to other terrain types
         for (int j = 0; j < tileCount(); ++j) {
             Tile *t = tileAt(j);
-
-            if (!hasByteEqualTo(t->terrain(), i))
+            TerrainInfo *ti = t->terrainInfo();
+            if (!ti)
                 continue;
 
-            // This tile has transitions, add the transitions as neightbours (distance 1)
-            int tl = t->cornerTerrainId(0);
-            int tr = t->cornerTerrainId(1);
-            int bl = t->cornerTerrainId(2);
-            int br = t->cornerTerrainId(3);
+            if (ti->type() == TerrainInfo::Quadrant) {
+                if (!hasByteEqualTo(ti->terrain(), i))
+                    continue;
 
-            // Terrain on diagonally opposite corners are not actually a neighbour
-            if (tl == i || br == i) {
-                distance[tr + 1] = 1;
-                distance[bl + 1] = 1;
-            }
-            if (tr == i || bl == i) {
-                distance[tl + 1] = 1;
-                distance[br + 1] = 1;
-            }
+                // This tile has transitions, add the transitions as neightbours (distance 1)
+                int tl = ti->cornerTerrainId(TerrainInfo::TopLeft);
+                int tr = ti->cornerTerrainId(TerrainInfo::TopRight);
+                int bl = ti->cornerTerrainId(TerrainInfo::BottomLeft);
+                int br = ti->cornerTerrainId(TerrainInfo::BottomRight);
 
-            // terrain has at least one tile of its own type
-            distance[i + 1] = 0;
+                // Terrain on diagonally opposite corners are not actually a neighbour
+                if (tl == i || br == i) {
+                    distance[tr + 1] = 1;
+                    distance[bl + 1] = 1;
+                }
+                if (tr == i || bl == i) {
+                    distance[tl + 1] = 1;
+                    distance[br + 1] = 1;
+                }
+
+                // terrain has at least one tile of its own type
+                distance[i + 1] = 0;
+            } else if (ti->type() == TerrainInfo::Adjacency) {
+                int terrainId = ti->terrainId();
+                int up = ti->connection(TerrainInfo::Top);
+                int down = ti->connection(TerrainInfo::Bottom);
+                int left = ti->connection(TerrainInfo::Left);
+                int right = ti->connection(TerrainInfo::Right);
+
+                if (terrainId == i) {
+                    // Terrain on diagonally opposite corners are not actually a neighbour
+                    distance[up + 1] = 1;
+                    distance[down + 1] = 1;
+                    distance[left + 1] = 1;
+                    distance[right + 1] = 1;
+
+                    // terrain has at least one tile of its own type
+                    distance[i + 1] = 0;
+                } else if (hasByteEqualTo(ti->connections(), i)) {
+                    distance[terrainId + 1] = 1;
+                }
+            }
         }
 
         type->setTransitionDistances(distance);

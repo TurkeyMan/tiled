@@ -32,7 +32,6 @@
 #include "object.h"
 #include "tileset.h"
 
-#include <QColor>
 #include <QString>
 #include <QVector>
 
@@ -46,11 +45,17 @@ class Tile;
 class TILEDSHARED_EXPORT Terrain : public Object
 {
 public:
-    Terrain(int id, Tileset *tileset, QString name, int imageTile):
+    enum TerrainType {
+        MatchQuadrants,
+        MatchAdjacency
+    };
+
+    Terrain(int id, Tileset *tileset, QString name, int imageTile, TerrainType type):
         mId(id),
         mTileset(tileset),
         mName(name),
-        mImageTile(imageTile)
+        mImageTile(imageTile),
+        mType(type)
     {
     }
 
@@ -68,6 +73,11 @@ public:
      * Returns the name of this terrain type.
      */
     QString name() const { return mName; }
+
+    /**
+     * Returns the type of this Terrain.
+     */
+    TerrainType type() const { return mType; }
 
     /**
      * Returns a tile index that represents this terrain type in the terrain palette.
@@ -104,6 +114,7 @@ private:
     Tileset *mTileset;
     QString mName;
     int mImageTile;
+    TerrainType mType;
     QVector<int> mTransitionDistance;
 };
 

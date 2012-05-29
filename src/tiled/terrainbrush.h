@@ -25,6 +25,7 @@
 
 #include "abstracttiletool.h"
 #include "tilelayer.h"
+#include "terrain.h"
 
 namespace Tiled {
 
@@ -73,7 +74,12 @@ public:
     /**
      * Set the brush mode.
      */
-    void setBrushMode(BrushMode mode) { mBrushMode = mode; setTilePositionMethod(mode == PaintTile ? OnTiles : BetweenTiles); }
+    void setBrushMode(BrushMode mode);
+
+    /**
+     * Returns the current brush mode.
+     */
+    BrushMode brushMode() const { return (mTerrain && mTerrain->type() == Terrain::MatchAdjacency) ? PaintTile : mBrushMode; }
 
 signals:
     /**
@@ -102,7 +108,9 @@ private:
 
     void capture();
 
-    Tile *findBestTile(Tileset *tileset, unsigned int terrain, unsigned int considerationMask);
+    Tile *findBestTileByQuadrant(Tileset *tileset, unsigned int terrain, unsigned int considerationMask);
+
+    Tile *findBestTileByAdjacency(Tileset *tileset, int terrain, unsigned int connections);
 
     /**
      * updates the brush given new coordinates.

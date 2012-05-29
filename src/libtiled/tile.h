@@ -32,6 +32,7 @@
 
 #include "object.h"
 #include "tileset.h"
+#include "terraininfo.h"
 
 #include <QPixmap>
 
@@ -44,8 +45,7 @@ public:
         mId(id),
         mTileset(tileset),
         mImage(image),
-        mTerrain(-1),
-        mTerrainProbability(-1.f)
+        mTerrain(TerrainInfo::None, -1, -1, -1.f)
     {}
 
     /**
@@ -84,50 +84,48 @@ public:
     QSize size() const { return mImage.size(); }
 
     /**
-     * Returns the Terrain of a given corner.
+     * Get the terrain info for this tile.
      */
-    Terrain *terrainAtCorner(int corner) const { return mTileset->terrain(cornerTerrainId(corner)); }
+    TerrainInfo *terrainInfo() { return this != NULL ? &mTerrain : NULL; }
+    const TerrainInfo *terrainInfo() const { return this != NULL ? &mTerrain : NULL; }
 
     /**
-     * Returns the terrain id at a given corner.
+     * Returns true if the type is a quadrant terrain type.
      */
-    int cornerTerrainId(int corner) const { unsigned int t = (terrain() >> (3 - corner)*8) & 0xFF; return t == 0xFF ? -1 : (int)t; }
-
-    /**
-     * Set the terrain type of a given corner.
-     */
-    void setCornerTerrain(int corner, int terrainId)
+    bool isQuadrantType() const
     {
-        unsigned int mask = 0xFF << (3 - corner)*8;
-        unsigned int insert = terrainId << (3 - corner)*8;
-        mTerrain = (mTerrain & ~mask) | (insert & mask);
+        return terrainInfo()->type() == TerrainInfo::Quadrant;
     }
 
     /**
-     * Functions to get various terrain type information from tiles.
+     * Returns true if the type is an adjacency terrain type.
      */
-    unsigned short topEdge() const { return terrain() >> 16; }
-    unsigned short bottomEdge() const { return terrain() & 0xFFFF; }
-    unsigned short leftEdge() const { return((terrain() >> 16) & 0xFF00) | ((terrain() >> 8) & 0xFF); }
-    unsigned short rightEdge() const { return ((terrain() >> 8) & 0xFF00) | (terrain() & 0xFF); }
-    unsigned int terrain() const { return this == NULL ? 0xFFFFFFFF : mTerrain; } // HACK: NULL Tile has 'none' terrain type.
+    bool isAdjacencyType() const
+    {
+        return terrainInfo()->type() == TerrainInfo::Adjacency;
+    }
 
     /**
-     * Returns the probability of this terrain type appearing while painting (0-100%).
+     * Returns the Terrain of a given corner.
      */
-    float terrainProbability() const { return mTerrainProbability; }
+    Terrain *terrain() const
+    {
+        return mTileset->terrain(mTerrain.terrainId());
+    }
 
     /**
-     * Set the probability of this terrain type appearing while painting (0-100%).
+     * Returns the Terrain of a given corner.
      */
-    void setTerrainProbability(float probability) { mTerrainProbability = probability; }
+    Terrain *terrainAtCorner(TerrainInfo::Corner corner) const
+    {
+        return mTileset->terrain(terrainInfo()->cornerTerrainId(corner));
+    }
 
 private:
     int mId;
     Tileset *mTileset;
     QPixmap mImage;
-    unsigned int mTerrain;
-    float mTerrainProbability;
+    TerrainInfo mTerrain;
 };
 
 } // namespace Tiled
