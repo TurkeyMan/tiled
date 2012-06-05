@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="30" height="30" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" source="icecave.tsx"/>
+ <layer name="Floor" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjZWBgYKURjgPieCScQEO7kO3MBeJ8JJxDB/vrgLgeDcdC7S+gg7+xuaWBzvYixzm97a2DhjcueW4g5gFiXhrZjUtOGohlgNgHaj86poV7kO21AWIdLFiXxvbK0jn+tWnsr1E8ikfx8MWweiuBTvYxQWn0upqZTvYzI7lhOGB6hdtgsXewY3qmrdE4oB4GAFIPIpE=
+  </data>
+ </layer>
+ <layer name="Walls" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJy9VstOAzEM9KFCKscCbeEIFChH3u0BEI8CF+D/v4axNlaHKMluuklHGkXaZjOO7fFWJA/74EGEQ/Aw87xc3XNw5NY5ae9U1r0Hj8ETt47c8zHtnYBTKZMD0/0Ar8Brt6r23NMdSLkcnIIz8Ax8A1duVe2FNDW2O/LevrgBH8A77/kL+CX/6xzbuwn0bp/S3NOH5dV0be9rAd0UNK+h/uqDLr2peV0U1k315sTFwzUupWv+CZ03oHgs19zXfXV1NrEnjug3m5Gca5udm+hbXXelmVEhT+gdL2Ttac31nqx7LGd2sJ69qzOK/XPpVt+nGofOT773mM6cJnRD351YzNpP7FONQ+cnz5Ghd4cYLHczWq22y8R7FscqEnubrsZ8Cz6CT+CzhGsb8nWoRl11NeZ38Bv8AX8lPO9CvuZ5mavbFZpL7V32l9aI/wvU0LXe5Rr4Hq6ha73L/jIP19RVjVDdU71cQteHeWzbugb+Fm9Tt623aqGtt2oileuaSOW6JlK5ro3YrP4D7lspPA==
+  </data>
+ </layer>
+</map>
